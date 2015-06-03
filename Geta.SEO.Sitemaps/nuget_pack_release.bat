@@ -1,0 +1,1 @@
+nuget pack Geta.SEO.Sitemaps.csproj -Properties Configuration=Debug;VisualStudioVersion=12.0

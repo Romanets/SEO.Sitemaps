@@ -25,11 +25,11 @@ namespace Geta.SEO.Sitemaps.XML
 {
     public class SitemapXmlGenerator : ISitemapXmlGenerator
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(SitemapXmlGenerator));
-        private const int MaxSitemapEntryCount = 50000;
-        private readonly ISet<string> _urlSet;
-        private bool _stopGeneration;
-        private string _hostLanguageBranch;
+        protected static readonly ILog Log = LogManager.GetLogger(typeof(SitemapXmlGenerator));
+        protected const int MaxSitemapEntryCount = 50000;
+        protected readonly ISet<string> _urlSet;
+        protected bool _stopGeneration;
+        protected string _hostLanguageBranch;
 
         protected const string DateTimeFormat = "yyyy-MM-ddTHH:mm:sszzz";
 
@@ -122,7 +122,7 @@ namespace Geta.SEO.Sitemaps.XML
             }
         }
 
-        public void Stop()
+        public virtual void Stop()
         {
             _stopGeneration = true;
         }
@@ -132,7 +132,7 @@ namespace Geta.SEO.Sitemaps.XML
         /// </summary>
         /// <param name="entryCount">out: count of sitemap entries in the returned element</param>
         /// <returns>XElement that contains sitemap entries according to the configuration</returns>
-        private XElement CreateSitemapXmlContents(out int entryCount)
+        protected virtual XElement CreateSitemapXmlContents(out int entryCount)
         {
             IEnumerable<XElement> sitemapXmlElements = GetSitemapXmlElements();
 
@@ -454,7 +454,7 @@ namespace Geta.SEO.Sitemaps.XML
             return Math.Max(1.0 - (depth / 10.0), 0.5).ToString(CultureInfo.InvariantCulture);
         }
 
-        private CultureInfo GetCurrentLanguage(IContent content)
+        protected virtual CultureInfo GetCurrentLanguage(IContent content)
         {
             var localizableContent = content as ILocalizable;
 
@@ -466,7 +466,7 @@ namespace Geta.SEO.Sitemaps.XML
             return CultureInfo.InvariantCulture;
         }
 
-        private CultureInfo GetMasterLanguage(IContent content)
+        protected virtual CultureInfo GetMasterLanguage(IContent content)
         {
             var localizableContent = content as ILocalizable;
 
@@ -478,14 +478,14 @@ namespace Geta.SEO.Sitemaps.XML
             return CultureInfo.InvariantCulture;
         }
 
-        private SiteDefinition GetSiteDefinitionFromSiteUri(Uri sitemapSiteUri)
+        protected virtual SiteDefinition GetSiteDefinitionFromSiteUri(Uri sitemapSiteUri)
         {
             return this.SiteDefinitionRepository
                 .List()
                 .FirstOrDefault(siteDef => siteDef.SiteUrl == sitemapSiteUri || siteDef.Hosts.Any(hostDef => hostDef.Name.Equals(sitemapSiteUri.Host, StringComparison.InvariantCultureIgnoreCase)));
         }
 
-        private string GetHostLanguageBranch()
+        protected virtual string GetHostLanguageBranch()
         {
             var hostDefinition = GetHostDefinition();
 
@@ -494,7 +494,7 @@ namespace Geta.SEO.Sitemaps.XML
                 : null;
         }
 
-        private bool HostDefinitionExistsForLanguage(string languageBranch)
+        protected virtual bool HostDefinitionExistsForLanguage(string languageBranch)
         {
             var cacheKey = string.Format("HostDefinitionExistsFor{0}-{1}", this.SitemapData.SiteUrl, languageBranch);
             object cachedObject = HttpRuntime.Cache.Get(cacheKey);
@@ -513,7 +513,7 @@ namespace Geta.SEO.Sitemaps.XML
             return (bool)cachedObject;
         }
 
-        private HostDefinition GetHostDefinition()
+        protected virtual HostDefinition GetHostDefinition()
         {
             var siteUrl = new Uri(this.SitemapData.SiteUrl);
             string sitemapHost = siteUrl.Host;
@@ -522,14 +522,14 @@ namespace Geta.SEO.Sitemaps.XML
                    this.SiteSettings.Hosts.FirstOrDefault(x => x.Name.Equals(SiteDefinition.WildcardHostName));
         }
 
-        private bool ExcludeContentLanguageFromSitemap(CultureInfo language)
+        protected virtual bool ExcludeContentLanguageFromSitemap(CultureInfo language)
         {
             return this._hostLanguageBranch != null &&
                !this._hostLanguageBranch.Equals(language.Name, StringComparison.InvariantCultureIgnoreCase) &&
                HostDefinitionExistsForLanguage(language.Name);
         }
 
-        private string GetAbsoluteUrl(string url)
+        protected string GetAbsoluteUrl(string url)
         {
             Uri absoluteUri;
 
@@ -547,7 +547,7 @@ namespace Geta.SEO.Sitemaps.XML
             return url;
         }
 
-        private bool IsAbsoluteUrl(string url, out Uri absoluteUri)
+        protected bool IsAbsoluteUrl(string url, out Uri absoluteUri)
         {
             return Uri.TryCreate(url, UriKind.Absolute, out absoluteUri);
         }

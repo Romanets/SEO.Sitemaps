@@ -7,3 +7,5 @@ packages
 TestResults
 
 *.suo
+*.nupkg
+Geta.SEO.Sitemaps/nuget_push_to_local.bat
